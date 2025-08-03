@@ -1,0 +1,119 @@
+# Terraform Variables File - Example Configuration
+# This file shows example values for AWS infrastructure deployment
+
+# General Configuration
+aws_region = "us-east-1"
+project_name = "example-project"
+
+default_tags = {
+  Environment = "development"
+  Project     = "terraform-bot-example"
+  ManagedBy   = "terraform"
+  Owner       = "DevOps-Team"
+}
+
+# VPC Configuration
+create_vpc = true
+vpc_cidr = "10.0.0.0/16"
+enable_dns_hostnames = true
+enable_dns_support = true
+
+# Subnet Configuration
+public_subnet_cidrs = ["10.0.1.0/24", "10.0.2.0/24"]
+private_subnet_cidrs = ["10.0.10.0/24", "10.0.20.0/24"]
+map_public_ip_on_launch = true
+
+# Internet Gateway and NAT
+create_igw = true
+create_nat_gateway = true
+
+# Security Groups
+create_security_groups = true
+
+web_ingress_rules = [
+  {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "HTTP"
+  },
+  {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "HTTPS"
+  },
+  {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["10.0.0.0/16"]
+    description = "SSH from VPC"
+  }
+]
+
+# EC2 Configuration
+create_ec2 = false
+ec2_instance_count = 2
+ec2_instance_type = "t3.micro"
+ec2_ami_id = "ami-0c02fb55956c7d316"  # Amazon Linux 2 in us-east-1
+ec2_key_pair_name = "my-keypair"
+ec2_volume_type = "gp3"
+ec2_volume_size = 20
+ec2_encrypt_volume = true
+
+# Load Balancer Configuration
+create_alb = false
+alb_internal = false
+alb_deletion_protection = false
+alb_target_port = 80
+alb_target_protocol = "HTTP"
+
+# RDS Configuration
+create_rds = false
+rds_engine = "mysql"
+rds_engine_version = "8.0"
+rds_instance_class = "db.t3.micro"
+rds_allocated_storage = 20
+rds_storage_encrypted = true
+rds_database_name = "exampledb"
+rds_username = "admin"
+# Note: In production, use AWS Secrets Manager for passwords
+rds_password = "ChangeMe123!"
+rds_backup_retention_period = 7
+rds_deletion_protection = false
+
+# S3 Configuration
+create_s3 = false
+s3_bucket_suffix = "example-bucket-20240731"
+s3_versioning_enabled = true
+s3_encryption_algorithm = "AES256"
+s3_block_public_acls = true
+s3_block_public_policy = true
+s3_ignore_public_acls = true
+s3_restrict_public_buckets = true
+
+# EKS Configuration
+create_eks = false
+eks_cluster_version = "1.28"
+eks_endpoint_private_access = false
+eks_endpoint_public_access = true
+eks_cluster_log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
+
+# Lambda Configuration
+create_lambda = false
+lambda_filename = "lambda_function.zip"
+lambda_handler = "lambda_function.handler"
+lambda_runtime = "python3.9"
+lambda_timeout = 30
+lambda_memory_size = 128
+lambda_environment_variables = {
+  ENVIRONMENT = "development"
+  LOG_LEVEL   = "INFO"
+}
+
+# CloudWatch Configuration
+create_cloudwatch_logs = false
+cloudwatch_log_retention_days = 14
