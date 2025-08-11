@@ -189,13 +189,13 @@ class TerraformQuestionManager:
                 continue
             
             # Check if line starts with "Service-name:"
-            if line.startswith('Service-name:') or line.startswith('Service:'):
+            if line.startswith('**Service-name:') or line.startswith('Service-name:'):
                 # Save previous service questions
                 if current_service and current_questions:
                     service_questions[current_service] = current_questions.copy()
                 
                 # Extract service name
-                service_name = line.split(':', 1)[1].strip()
+                service_name = line.split(':', 1)[1].strip().strip('*')
                 current_service = service_name
                 current_questions = []
                 

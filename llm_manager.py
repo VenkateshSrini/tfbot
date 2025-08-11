@@ -1,6 +1,6 @@
 """LLM manager for handling OpenAI API and LangChain interactions for Terraform Bot"""
 import os
-from langchain_community.chat_models import ChatOpenAI
+from langchain_openai import ChatOpenAI
 from config import DEFAULT_MODEL, GPT4_MODEL, DEFAULT_TEMPERATURE, GPT4_TEMPERATURE
 
 
