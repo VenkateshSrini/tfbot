@@ -1,2 +1,3 @@
 /__pycache__
 sample_tf/generated_questions.txt
+sample_tf/generated_terraform.tfvars
