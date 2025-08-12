@@ -40,22 +40,22 @@ def main():
         
         # Generate Terraform variables file
         print("\n🔨 Generating Terraform configuration...")
-        
+        terraform_file = terraform_generator.generate_terraform_vars_gpt4(answers, parser)
         # Ask user for generation method
-        print("\nChoose generation method:")
-        print("1. AI-powered (GPT-4.1) - Recommended")
-        print("2. Rule-based - Fast")
+        # print("\nChoose generation method:")
+        # print("1. AI-powered (GPT-4.1) - Recommended")
+        # print("2. Rule-based - Fast")
         
-        while True:
-            choice = input("\nEnter your choice (1 or 2): ").strip()
-            if choice in ['1', '2']:
-                break
-            print("⚠️  Please enter 1 or 2")
+        # while True:
+        #     choice = input("\nEnter your choice (1 or 2): ").strip()
+        #     if choice in ['1', '2']:
+        #         break
+        #     print("⚠️  Please enter 1 or 2")
         
-        if choice == '1':
-            terraform_file = terraform_generator.generate_terraform_vars_gpt4(answers, parser)
-        else:
-            terraform_file = terraform_generator.generate_terraform_vars_manual(answers, parser)
+        # if choice == '1':
+        #     terraform_file = terraform_generator.generate_terraform_vars_gpt4(answers, parser)
+        # else:
+        #     terraform_file = terraform_generator.generate_terraform_vars_manual(answers, parser)
         
         # Validate generated file
         if terraform_generator.validate_generated_file():
