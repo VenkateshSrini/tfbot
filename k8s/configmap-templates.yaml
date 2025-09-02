@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: terraform-templates
+  namespace: default
+data:
+  # Add your Terraform template files here
+  # This is a sample - you'll need to add your actual template content
+  main.tf: |
+    # Your main.tf content goes here
+    # This will be mounted as a file in the container
+  variables.tf: |
+    # Your variables.tf content goes here
+  outputs.tf: |
+    # Your outputs.tf content goes here

@@ -1,0 +1,140 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: terraform-bot-config
+  namespace: default
+data:
+  PYTHONPATH: "/app"
+  PYTHONUNBUFFERED: "1"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: terraform-bot-secrets
+  namespace: default
+type: Opaque
+data:
+  # Base64 encoded OpenAI API key
+  # Replace 'your-base64-encoded-openai-api-key' with actual base64 encoded key
+  # echo -n 'your-openai-api-key' | base64
+  OPENAI_API_KEY: your-base64-encoded-openai-api-key
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: terraform-bot-api
+  namespace: default
+  labels:
+    app: terraform-bot-api
+    version: v1
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: terraform-bot-api
+  template:
+    metadata:
+      labels:
+        app: terraform-bot-api
+        version: v1
+    spec:
+      containers:
+      - name: terraform-bot-api
+        image: terraform-bot-api:latest
+        ports:
+        - containerPort: 8000
+          name: http
+        env:
+        - name: PYTHONPATH
+          valueFrom:
+            configMapKeyRef:
+              name: terraform-bot-config
+              key: PYTHONPATH
+        - name: PYTHONUNBUFFERED
+          valueFrom:
+            configMapKeyRef:
+              name: terraform-bot-config
+              key: PYTHONUNBUFFERED
+        - name: OPENAI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: terraform-bot-secrets
+              key: OPENAI_API_KEY
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        volumeMounts:
+        - name: terraform-templates
+          mountPath: /app/sample_tf
+          readOnly: true
+        - name: output-volume
+          mountPath: /app/output
+      volumes:
+      - name: terraform-templates
+        configMap:
+          name: terraform-templates
+      - name: output-volume
+        emptyDir: {}
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: terraform-bot-api-service
+  namespace: default
+  labels:
+    app: terraform-bot-api
+spec:
+  selector:
+    app: terraform-bot-api
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8000
+    protocol: TCP
+  type: ClusterIP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: terraform-bot-api-ingress
+  namespace: default
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+spec:
+  rules:
+  - host: terraform-bot-api.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: terraform-bot-api-service
+            port:
+              number: 80

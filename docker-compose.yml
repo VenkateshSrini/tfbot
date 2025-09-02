@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  terraform-bot-api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONPATH=/app
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    volumes:
+      # Mount the sample_tf directory for templates
+      - ./sample_tf:/app/sample_tf:ro
+      # Mount output directory for generated files
+      - ./output:/app/output
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
