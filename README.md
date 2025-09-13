@@ -30,13 +30,16 @@ uvicorn api.main:app --reload
 
 ## 📚 Documentation
 
-📖 **[Complete Documentation](documentation/README.md)** - Comprehensive guide covering all features, API endpoints, deployment options, and testing
+📖 **[Complete Documentation](documentation/README.md)** - Comprehensive guide covering all features, installation, configuration, API endpoints, deployment options, multi-provider LLM system, testing, and troubleshooting
 
-### Quick Links
-- [API Documentation](documentation/README.md#-api-endpoints) - REST API endpoints and examples
-- [Container Deployment](documentation/CONTAINER_SETUP.md) - Docker and Kubernetes setup
-- [Testing Guide](documentation/README.md#-testing) - Running tests and validation
-- [Configuration Guide](documentation/README.md#-configuration) - Setup and customization
+### Quick Access
+- [Installation & Setup](documentation/README.md#installation--setup) - Get started quickly
+- [Multi-Provider LLM System](documentation/README.md#multi-provider-llm-system) - OpenAI and Anthropic integration
+- [API Reference](documentation/README.md#api-reference) - REST API endpoints and examples
+- [Container Deployment](documentation/README.md#container--deployment) - Docker and Kubernetes setup
+- [Testing Guide](documentation/README.md#testing) - Running tests and validation
+- [Configuration Guide](documentation/README.md#configuration) - Setup and customization
+- [Troubleshooting](documentation/README.md#troubleshooting) - Common issues and solutions
 
 ## 🏗️ Architecture
 
