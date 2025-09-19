@@ -1,133 +1,94 @@
 # Terraform Variables File
-# Generated for AWS Infrastructure Deployment - My Cake Shop
-# Configured for PCI-DSS compliance with S3 storage for PDF files and EKS integration
+# Generated for mycake-shop AWS Infrastructure Deployment
+# SOC2 Compliance Configuration with EKS and S3 Integration
 
-# ============================================================================
-# GENERAL CONFIGURATION
-# ============================================================================
+# ================================
+# General Configuration
+# ================================
+aws_region = "us-east-1"                    # Primary AWS region for deployment
+project_name = "mycake-shop"                # Project name used for resource naming and tagging
 
-# AWS region for resource deployment
-aws_region = "us-east-1"
-
-# Project name used for resource naming and tagging
-project_name = "my-cake-shop"
-
-# Default tags applied to all resources for compliance and management
+# SOC2 compliance tags for audit and governance
 default_tags = {
-  Project     = "my-cake-shop"
+  Project     = "mycake-shop"
   Environment = "production"
-  Compliance  = "PCI-DSS"
-  Owner       = "cake-shop-team"
-  ManagedBy   = "terraform"
+  Compliance  = "SOC2"
+  Owner       = "DevOps-Team"
+  ManagedBy   = "Terraform"
 }
 
-# ============================================================================
-# VPC CONFIGURATION
-# ============================================================================
+# ================================
+# VPC Configuration
+# ================================
+create_vpc = true                           # Create new VPC for isolated network environment
+vpc_cidr = "10.0.0.0/16"                   # VPC CIDR block providing 65,536 IP addresses
+enable_dns_hostnames = true                # Enable DNS hostnames for EKS requirements
+enable_dns_support = true                  # Enable DNS support for service discovery
 
-# Create new VPC for isolated network environment
-create_vpc = true
-
-# VPC CIDR block - using /16 for sufficient IP space
-vpc_cidr = "10.0.0.0/16"
-
-# Enable DNS features for proper service discovery
-enable_dns_hostnames = true
-enable_dns_support = true
-
-# Public subnet CIDRs across multiple AZs for high availability
+# Public subnets for load balancers and NAT gateways (multi-AZ for HA)
 public_subnet_cidrs = ["10.0.1.0/24", "10.0.2.0/24"]
 
-# Private subnet CIDRs for secure backend resources
+# Private subnets for EKS worker nodes and RDS (multi-AZ for HA)
 private_subnet_cidrs = ["10.0.10.0/24", "10.0.20.0/24"]
 
-# Create Internet Gateway for public internet access
-create_igw = true
+# Internet Gateway and NAT Gateway for connectivity
+create_igw = true                          # Internet Gateway for public subnet internet access
+create_nat_gateway = true                  # NAT Gateway for private subnet outbound internet access
+map_public_ip_on_launch = false           # Security best practice - no auto public IPs
 
-# Create NAT Gateway for private subnet internet access
-create_nat_gateway = true
+# ================================
+# Security Groups Configuration
+# ================================
+create_security_groups = true             # Create security groups for services
 
-# Auto-assign public IPs to instances in public subnets
-map_public_ip_on_launch = true
-
-# ============================================================================
-# SECURITY GROUP CONFIGURATION
-# ============================================================================
-
-# Create security groups for network access control
-create_security_groups = true
-
-# Web security group ingress rules for PCI-DSS compliance
+# Web tier security group rules (restrictive for SOC2 compliance)
 web_ingress_rules = [
   {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
-    description = "HTTPS traffic for secure web access"
+    description = "HTTPS traffic from internet"
   },
   {
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
-    description = "HTTP traffic (redirect to HTTPS)"
+    description = "HTTP traffic from internet (redirect to HTTPS)"
   }
 ]
 
-# No existing security groups to import
-existing_security_group_ids = []
+# ================================
+# EKS Configuration
+# ================================
+create_eks = true                          # Enable EKS cluster for container orchestration
+eks_cluster_version = "1.28"              # Latest stable Kubernetes version
+eks_endpoint_private_access = true        # Enable private API access for security
+eks_endpoint_public_access = true         # Enable public API access for management
+eks_cluster_log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]  # Full logging for SOC2 compliance
 
-# ============================================================================
-# EC2 CONFIGURATION
-# ============================================================================
+# ================================
+# S3 Configuration
+# ================================
+create_s3 = true                           # Enable S3 for PDF file storage
+s3_bucket_suffix = "pdf-documents"         # Descriptive suffix for PDF storage bucket
+s3_versioning_enabled = true               # Enable versioning for data protection and SOC2 compliance
+s3_encryption_algorithm = "AES256"         # Server-side encryption for data at rest
 
-# Disable standalone EC2 instances (using EKS instead)
-create_ec2 = false
+# SOC2 compliant S3 security settings
+s3_block_public_acls = true               # Block public ACLs for security
+s3_block_public_policy = true             # Block public bucket policies
+s3_ignore_public_acls = true              # Ignore public ACLs
+s3_restrict_public_buckets = true         # Restrict public bucket access
 
-# EC2 configuration (kept for potential future use)
-ec2_instance_count = 0
-ec2_instance_type = "t3.medium"
-ec2_ami_id = "ami-0c02fb55956c7d316"
-ec2_key_pair_name = ""
-ec2_volume_type = "gp3"
-ec2_volume_size = 30
+# ================================
+# CloudWatch Logs Configuration
+# ================================
+create_cloudwatch_logs = true             # Enable CloudWatch logs for monitoring and compliance
+cloudwatch_log_retention_days = 90        # Extended retention for SOC2 audit requirements
 
-# ============================================================================
-# LOAD BALANCER CONFIGURATION
-# ============================================================================
-
-# Create ALB for EKS ingress traffic distribution
-create_alb = true
-
-# External-facing ALB for public access
-alb_internal = false
-
-# Enable deletion protection for production environment
-alb_deletion_protection = true
-
-# ALB target configuration for HTTPS traffic
-alb_target_port = 80
-alb_target_protocol = "HTTP"
-alb_listener_port = 443
-alb_listener_protocol = "HTTPS"
-
-# Health check configuration for high availability
-alb_health_check_healthy_threshold = 3
-alb_health_check_interval = 30
-alb_health_check_matcher = "200,301,302"
-
-# ============================================================================
-# RDS CONFIGURATION
-# ============================================================================
-
-# Enable RDS for application database needs
-create_rds = true
-
-# MySQL engine for cake shop application
-rds_engine = "mysql"
-rds_engine_version = "8.0"
-
-# Storage configuration with auto-scaling
-rds_allocated_storage = 50
-rds_max_allocated_storage =
+# ================================
+# Disabled Services
+# ================================
+# EC2 instances not needed with

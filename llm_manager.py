@@ -82,6 +82,70 @@ class AnthropicLLMProvider(BaseLLMProvider):
         return "Anthropic"
 
 
+class BedrockLLMProvider(BaseLLMProvider):
+    """AWS Bedrock LLM provider implementation"""
+    
+    def setup_api_key(self):
+        """Setup AWS credentials for Bedrock"""
+        # Check for AWS credentials in environment
+        required_aws_vars = ['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY']
+        missing_vars = [var for var in required_aws_vars if not os.environ.get(var)]
+        
+        if missing_vars:
+            print("AWS credentials not found in environment variables.")
+            print("You can either:")
+            print("1. Set AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY environment variables")
+            print("2. Configure AWS CLI with 'aws configure'")
+            print("3. Use IAM roles (if running on AWS)")
+            print("4. Enter credentials manually")
+            
+            choice = input("Enter credentials manually? (y/n): ").strip().lower()
+            if choice == 'y':
+                access_key = input("Please enter your AWS Access Key ID: ").strip()
+                secret_key = input("Please enter your AWS Secret Access Key: ").strip()
+                region = input("Please enter your AWS Region (default: us-east-1): ").strip() or 'us-east-1'
+                
+                os.environ['AWS_ACCESS_KEY_ID'] = access_key
+                os.environ['AWS_SECRET_ACCESS_KEY'] = secret_key
+                os.environ['AWS_DEFAULT_REGION'] = region
+                print("✅ AWS credentials are set successfully!")
+            else:
+                print("⚠️ Please configure AWS credentials before using Bedrock models.")
+        else:
+            print("✅ AWS credentials are already configured.")
+    
+    def create_llm_instance(self):
+        """Create AWS Bedrock LLM instance"""
+        try:
+            from langchain_aws import ChatBedrock
+            import boto3
+            
+            # Verify AWS credentials work
+            try:
+                session = boto3.Session()
+                credentials = session.get_credentials()
+                if not credentials:
+                    raise ValueError("AWS credentials not found or invalid")
+            except Exception as e:
+                raise ValueError(f"AWS credentials configuration error: {e}")
+            
+            # Extract region from environment or use default
+            region = os.environ.get('AWS_DEFAULT_REGION', 'us-east-1')
+            
+            return ChatBedrock(
+                model_id=self.model_name,
+                model_kwargs={"temperature": self.temperature},
+                region_name=region
+            )
+        except ImportError:
+            raise ImportError("langchain_aws and boto3 are required for Bedrock models. Install with: pip install langchain-aws boto3")
+        except Exception as e:
+            raise RuntimeError(f"Failed to create Bedrock LLM instance: {e}")
+    
+    def get_provider_name(self) -> str:
+        return "AWS Bedrock"
+
+
 class LLMManager:
     """Enhanced LLM manager with multi-provider support"""
     
@@ -105,6 +169,9 @@ class LLMManager:
                 self._provider_cache[provider_type] = OpenAILLMProvider(model_name, DEFAULT_TEMPERATURE)
             elif provider_type == 'anthropic':
                 self._provider_cache[provider_type] = AnthropicLLMProvider(model_name, DEFAULT_TEMPERATURE)
+            # Uncomment when enabling Bedrock
+            # elif provider_type == 'bedrock':
+            #     self._provider_cache[provider_type] = BedrockLLMProvider(model_name, DEFAULT_TEMPERATURE)
             else:
                 raise ValueError(f"Unsupported provider: {provider_type}")
         
@@ -123,6 +190,9 @@ class LLMManager:
                     temp_provider = OpenAILLMProvider(model_name, temperature)
                 elif provider_type == 'anthropic':
                     temp_provider = AnthropicLLMProvider(model_name, temperature)
+                # Uncomment when enabling Bedrock
+                # elif provider_type == 'bedrock':
+                #     temp_provider = BedrockLLMProvider(model_name, temperature)
                 else:
                     raise ValueError(f"Unsupported provider: {provider_type}")
                 
